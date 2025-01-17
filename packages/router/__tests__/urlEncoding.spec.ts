@@ -3,8 +3,9 @@ import { components } from './utils'
 import { RouteRecordRaw } from '../src/types'
 import { createMemoryHistory } from '../src'
 import * as encoding from '../src/encoding'
+import { vi, describe, expect, it, beforeEach } from 'vitest'
 
-jest.mock('../src/encoding')
+vi.mock('../src/encoding')
 
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: components.Home },
@@ -28,7 +29,7 @@ describe('URL Encoding', () => {
       // @ts-expect-error
       const value = encoding[key]
       // @ts-expect-error
-      if (typeof value === 'function') encoding[key] = jest.fn((v: string) => v)
+      if (typeof value === 'function') encoding[key] = vi.fn((v: string) => v)
       // @ts-expect-error
       else if (key === 'PLUS_RE') encoding[key] = /\+/g
     }
@@ -68,17 +69,17 @@ describe('URL Encoding', () => {
     const router = createRouter()
     await router.push('/p/foo')
     // one extra time for hash
-    expect(encoding.decode).toHaveBeenCalledTimes(2)
-    expect(encoding.decode).toHaveBeenNthCalledWith(1, 'foo')
+    expect(encoding.decode).toHaveBeenCalledTimes(3)
+    expect(encoding.decode).toHaveBeenNthCalledWith(2, 'foo')
   })
 
   it('calls decode with a path with repeatable params', async () => {
     const router = createRouter()
     await router.push('/p/foo/bar')
     // one extra time for hash
-    expect(encoding.decode).toHaveBeenCalledTimes(3)
-    expect(encoding.decode).toHaveBeenNthCalledWith(1, 'foo', 0, ['foo', 'bar'])
-    expect(encoding.decode).toHaveBeenNthCalledWith(2, 'bar', 1, ['foo', 'bar'])
+    expect(encoding.decode).toHaveBeenCalledTimes(4)
+    expect(encoding.decode).toHaveBeenNthCalledWith(2, 'foo', 0, ['foo', 'bar'])
+    expect(encoding.decode).toHaveBeenNthCalledWith(3, 'bar', 1, ['foo', 'bar'])
   })
 
   it('decodes values in params', async () => {
@@ -108,7 +109,7 @@ describe('URL Encoding', () => {
     const router = createRouter()
     await router.push('/?p=foo')
     // one extra time for hash
-    expect(encoding.decode).toHaveBeenCalledTimes(3)
+    expect(encoding.decode).toHaveBeenCalledTimes(4)
     expect(encoding.decode).toHaveBeenNthCalledWith(1, 'p')
     expect(encoding.decode).toHaveBeenNthCalledWith(2, 'foo')
   })

@@ -113,6 +113,19 @@ You don't need to add the `*` for repeated params if you don't plan to directly 
 
 **Reason**: Vue Router doesn't use `path-to-regexp` anymore, instead it implements its own parsing system that allows route ranking and enables dynamic routing. Since we usually add one single catch-all route per project, there is no big benefit in supporting a special syntax for `*`. The encoding of params is encoding across routes, without exception to make things easier to predict.
 
+### The `currentRoute` property is now a `ref()`
+
+Previously the properties of the [`currentRoute`](https://v3.router.vuejs.org/api/#router-currentroute) object on a router instance could be accessed directly.
+
+With the introduction of vue-router v4, the underlying type of the `currentRoute` object on the router instance has changed to `Ref<RouteLocationNormalizedLoaded>`, which comes from the newer [reactivity fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) introduced in Vue 3.
+
+While this doesn't change anything if you're reading the route with `useRoute()` or `this.$route`, if you're accessing it directly on the router instance, you will need to access the actual route object via `currentRoute.value`:
+
+```ts
+const { page } = router.currentRoute.query // [!code --]
+const { page } = router.currentRoute.value.query // [!code ++]
+```
+
 ### Replaced `onReady` with `isReady`
 
 The existing `router.onReady()` function has been replaced with `router.isReady()` which doesn't take any argument and returns a Promise:
@@ -141,7 +154,7 @@ The object returned in `scrollBehavior` is now similar to [`ScrollToOptions`](ht
 
 `transition` and `keep-alive` must now be used **inside** of `RouterView` via the `v-slot` API:
 
-```vue
+```vue-html
 <router-view v-slot="{ Component }">
   <transition>
     <keep-alive>
@@ -157,7 +170,7 @@ The object returned in `scrollBehavior` is now similar to [`ScrollToOptions`](ht
 
 The `append` prop has been removed from `<router-link>`. You can manually concatenate the value to an existing `path` instead:
 
-```html
+```vue-html
 replace
 <router-link to="child-route" append>to relative child</router-link>
 with
@@ -179,7 +192,7 @@ app.config.globalProperties.append = (path, pathToAppend) =>
 
 Both `event`, and `tag` props have been removed from `<router-link>`. You can use the [`v-slot` API](/guide/advanced/composition-api#uselink) to fully customize `<router-link>`:
 
-```html
+```vue-html
 replace
 <router-link to="/about" tag="span" event="dblclick">About Us</router-link>
 with
@@ -197,7 +210,7 @@ The `exact` prop has been removed because the caveat it was fixing is no longer 
 - Routes are now active based on the route records they represent instead of the generated route location objects and their `path`, `query`, and `hash` properties
 - Only the `path` section is matched, `query`, and `hash` aren't taken into account anymore
 
-If you wish to customize this behavior, e.g. take into account the `hash` section, you should use the [`v-slot` API](/guide/advanced/composition-api#uselink) to extend `<router-link>`.
+If you wish to customize this behavior, e.g. take into account the `hash` section, you should use the [`v-slot` API](/guide/advanced/composition-api#useLink) to extend `<router-link>`.
 
 **Reason**: See the [RFC about active matching](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0028-router-active-link.md#summary) changes for more details.
 
@@ -207,7 +220,7 @@ At the moment navigation guards in mixins are not supported. You can track its s
 
 ### Removal of `router.match` and changes to `router.resolve`
 
-Both `router.match`, and `router.resolve` have been merged together into `router.resolve` with a slightly different signature. [Refer to the API](/api/interfaces/Router.md#Methods-resolve) for more details.
+Both `router.match`, and `router.resolve` have been merged together into `router.resolve` with a slightly different signature. [Refer to the API](/api/interfaces/Router.md#resolve) for more details.
 
 **Reason**: Uniting multiple methods that were used for the same purpose.
 
@@ -263,7 +276,7 @@ You can also extend the TypeScript definition of the `Router` interface to add t
 
 Before you could directly pass a template to be rendered by a route components' `<slot>` by nesting it under a `<router-view>` component:
 
-```html
+```vue-html
 <router-view>
   <p>In Vue Router 3, I render inside the route component</p>
 </router-view>
@@ -271,7 +284,7 @@ Before you could directly pass a template to be rendered by a route components' 
 
 Because of the introduction of the `v-slot` api for `<router-view>`, you must pass it to the `<component>` using the `v-slot` API:
 
-```html
+```vue-html
 <router-view v-slot="{ Component }">
   <component :is="Component">
     <p>In Vue Router 3, I render inside the route component</p>
@@ -421,14 +434,20 @@ Note this will work if `path` was `/parent/` as the relative location `home` to 
 
 Decoded values in `params`, `query`, and `hash` are now consistent no matter where the navigation is initiated (older browsers will still produce unencoded `path` and `fullPath`). The initial navigation should yield the same results as in-app navigations.
 
-Given any [normalized route location](/api/interfaces/RouteLocationNormalized.md):
+Given any [normalized route location](/api/#RouteLocationNormalized):
 
 - Values in `path`, `fullPath` are not decoded anymore. They will appear as provided by the browser (most browsers provide them encoded). e.g. directly writing on the address bar `https://example.com/hello world` will yield the encoded version: `https://example.com/hello%20world` and both `path` and `fullPath` will be `/hello%20world`.
-- `hash` is now decoded, that way it can be copied over: `router.push({ hash: $route.hash })` and be used directly in [scrollBehavior](/api/interfaces/RouterOptions.md#Properties-scrollBehavior)'s `el` option.
+- `hash` is now decoded, that way it can be copied over: `router.push({ hash: $route.hash })` and be used directly in [scrollBehavior](/api/interfaces/RouterOptions.md#scrollBehavior)'s `el` option.
 - When using `push`, `resolve`, and `replace` and providing a `string` location or a `path` property in an object, **it must be encoded** (like in the previous version). On the other hand, `params`, `query` and `hash` must be provided in its unencoded version.
 - The slash character (`/`) is now properly decoded inside `params` while still producing an encoded version on the URL: `%2F`.
 
 **Reason**: This allows to easily copy existing properties of a location when calling `router.push()` and `router.resolve()`, and make the resulting route location consistent across browsers. `router.push()` is now idempotent, meaning that calling `router.push(route.fullPath)`, `router.push({ hash: route.hash })`, `router.push({ query: route.query })`, and `router.push({ params: route.params })` will not create extra encoding.
+
+### `$router.push()` and `$router.replace()` - `onComplete` and `onAbort` callbacks
+
+Previously, `$router.push()` and `$router.replace()` accepted two callbacks, `onComplete` and `onAbort`, as second and third arguments. They were called after a navigation based on the result. With the introduction of a Promise based API, these callbacks are redundant and have been removed. See [Navigation Failures](/guide/advanced/navigation-failures.md) for more information on how to detect successful and failed navigations.
+
+**Reason**: Reduce library size by adapting to established JS standards (Promises).
 
 ### TypeScript changes
 
