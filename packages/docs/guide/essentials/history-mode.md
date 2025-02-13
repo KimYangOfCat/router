@@ -7,23 +7,6 @@
 
 The `history` option when creating the router instance allows us to choose among different history modes.
 
-## Hash Mode
-
-The hash history mode is created with `createWebHashHistory()`:
-
-```js
-import { createRouter, createWebHashHistory } from 'vue-router'
-
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes: [
-    //...
-  ],
-})
-```
-
-It uses a hash character (`#`) before the actual URL that is internally passed. Because this section of the URL is never sent to the server, it doesn't require any special treatment on the server level. **It does however have a bad impact in SEO**. If that's a concern for you, use the HTML5 history mode.
-
 ## HTML5 Mode
 
 The HTML5 mode is created with `createWebHistory()` and is the recommended mode:
@@ -45,6 +28,23 @@ Here comes a problem, though: Since our app is a single page client side app, wi
 
 Not to worry: To fix the issue, all you need to do is add a simple catch-all fallback route to your server. If the URL doesn't match any static assets, it should serve the same `index.html` page that your app lives in. Beautiful, again!
 
+## Hash Mode
+
+The hash history mode is created with `createWebHashHistory()`:
+
+```js
+import { createRouter, createWebHashHistory } from 'vue-router'
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+})
+```
+
+It uses a hash character (`#`) before the actual URL that is internally passed. Because this section of the URL is never sent to the server, it doesn't require any special treatment on the server level. **It does however have a bad impact in SEO**. If that's a concern for you, use the HTML5 history mode.
+
 ## Memory mode
 
 The memory history mode doesn't assume a browser environment and therefore doesn't interact with the URL **nor automatically triggers the initial navigation**. This makes it perfect for Node environment and SSR. It is created with `createMemoryHistory()` and **requires you to push the initial navigation** after calling `app.use(router)`.
@@ -64,7 +64,7 @@ While it's not recommended, you can use this mode inside Browser applications bu
 
 ## Example Server Configurations
 
-**Note**: The following examples assume you are serving your app from the root folder. If you deploy to a subfolder, you should use [the `publicPath` option of Vue CLI](https://cli.vuejs.org/config/#publicpath) and the related [`base` property of the router](../../api/#Functions-createWebHistory). You also need to adjust the examples below to use the subfolder instead of the root folder (e.g. replacing `RewriteBase /` with `RewriteBase /name-of-your-subfolder/`).
+**Note**: The following examples assume you are serving your app from the root folder. If you deploy to a subfolder, you should use [the `publicPath` option of Vue CLI](https://cli.vuejs.org/config/#publicpath) and the related [`base` property of the router](../../api/interfaces/Router.md#createWebHistory). You also need to adjust the examples below to use the subfolder instead of the root folder (e.g. replacing `RewriteBase /` with `RewriteBase /name-of-your-subfolder/`).
 
 ### Apache
 
@@ -83,7 +83,7 @@ While it's not recommended, you can use this mode inside Browser applications bu
 </IfModule>
 ```
 
-Instead of `mod_rewrite`, you could also use [`FallbackResource`](https://httpd.apache.org/docs/2.2/mod/mod_dir.html#fallbackresource).
+Instead of `mod_rewrite`, you could also use [`FallbackResource`](https://httpd.apache.org/docs/2.4/mod/mod_dir.html#fallbackresource).
 
 ### nginx
 
@@ -214,4 +214,4 @@ const router = createRouter({
 })
 ```
 
-Alternatively, if you are using a Node.js server, you can implement the fallback by using the router on the server side to match the incoming URL and respond with 404 if no route is matched. Check out the [Vue server side rendering documentation](https://v3.vuejs.org/guide/ssr/introduction.html#what-is-server-side-rendering-ssr) for more information.
+Alternatively, if you are using a Node.js server, you can implement the fallback by using the router on the server side to match the incoming URL and respond with 404 if no route is matched. Check out the [Vue server side rendering documentation](https://vuejs.org/guide/scaling-up/ssr.html) for more information.

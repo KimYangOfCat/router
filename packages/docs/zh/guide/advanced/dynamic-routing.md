@@ -5,7 +5,7 @@
   title="Learn how to add routes at runtime"
 />
 
-对路由的添加通常是通过 [`routes` 选项](../../api/#routes)来完成的，但是在某些情况下，你可能想在应用程序已经运行的时候添加或删除路由。具有可扩展接口(如 [Vue CLI UI](https://cli.vuejs.org/dev-guide/ui-api.html) )这样的应用程序可以使用它来扩展应用程序。
+对路由的添加通常是通过 `routes` 选项来完成的，但是在某些情况下，你可能想在应用程序已经运行的时候添加或删除路由。具有可扩展接口(如 [Vue CLI UI](https://cli.vuejs.org/dev-guide/ui-api.html) )这样的应用程序可以使用它来扩展应用程序。
 
 ## 添加路由
 
@@ -30,7 +30,7 @@ router.addRoute({ path: '/about', component: About })
 
 ```js
 router.addRoute({ path: '/about', component: About })
-// 我们也可以使用 this.$route 或 route = useRoute() （在 setup 中）
+// 我们也可以使用 this.$route 或 useRoute()
 router.replace(router.currentRoute.value.fullPath)
 ```
 
@@ -50,7 +50,7 @@ router.beforeEach(to => {
 })
 ```
 
-上面的例子有两个假设：第一，新添加的路由记录将与 `to` 位置相匹配，实际上导致与我们试图访问的位置不同。第二，`hasNecessaryRoute()` 在添加新的路由后返回 `false`，以避免无限重定向。
+上面的例子有两个假设：第一，新添加的路由记录将与 `to` 位置相匹配，实际上导致与我们试图访问的位置不同。第二，`hasNecessaryRoute()` 在添加新的路由后返回 `true`，以避免无限重定向。
 
 因为是在重定向中，所以我们是在替换将要跳转的导航，实际上行为就像之前的例子一样。而在实际场景中，添加路由的行为更有可能发生在导航守卫之外，例如，当一个视图组件挂载时，它会注册新的路由。
 
